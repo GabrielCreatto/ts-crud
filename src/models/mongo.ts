@@ -1,19 +1,49 @@
-import * as db from 'mongodb';
-import dotenv from 'dotenv';
+import * as mongoDB from "mongodb";
 
-export const collections: { users?: db.Collection } = {}
+export const collections: { users?: mongoDB.Collection } = {}
 
 export async function connect_database() {
-    dotenv.config();
-    const mongoHost: string = process.env.MONGO_HOST!.toString();
-    const client: db.MongoClient = new db.MongoClient(mongoHost);
+
+    const client: mongoDB.MongoClient = new mongoDB.MongoClient(process.env.MONGO_HOST!.toString());
 
     await client.connect();
 
-    const colUsers = client.db('test').collection('users');
+    const db: mongoDB.Db = client.db("test");
 
-    collections.users = colUsers;
+    const usersCollection: mongoDB.Collection = db.collection("users");
+    
+    await schema(db);
 
-    console.log('Connected to mongo successfully!');
+    collections.users = usersCollection;
 
+    console.log(`Successfully connected to database: ${db.databaseName} and collection: ${usersCollection.collectionName}`);
+}
+
+async function schema(db: mongoDB.Db) {
+
+    await db.command({
+        "collMod": "users",
+        "validator": {
+            $jsonSchema: {
+                bsonType: "object",
+                required: ["name", "price", "category"],
+                additionalProperties: false,
+                properties: {
+                    _id: {},
+                    name: {
+                        bsonType: "string",
+                        description: "'name' is required and is a string"
+                    },
+                    price: {
+                        bsonType: "number",
+                        description: "'price' is required and is a number"
+                    },
+                    category: {
+                        bsonType: "string",
+                        description: "'category' is required and is a string"
+                    }
+                }
+            }
+        }
+    });
 }
