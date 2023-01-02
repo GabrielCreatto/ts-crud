@@ -11,4 +11,5 @@ export async function init_routers(): Promise<Express> {
     await connect_database();
 
     return app;
+    
 }
