@@ -70,4 +70,26 @@ router.delete('/:id', async (req: Request, res: Response) => {
     }
 });
 
+router.put("/:id", async (req: Request, res: Response) => {
+    const id = req.params.id;
+  
+    try {
+        const updatedUser: User = req.body as User;
+        const query = { _id: new ObjectId(id) };
+      
+        const result = await collections.users?.updateOne(query, { $set: updatedUser})
+  
+        if (result && result.modifiedCount > 0) {
+            res.status(200).send(`Successfully updated user with id ${id}!`);
+        } else if (result && result.modifiedCount === 0 && result.matchedCount === 1) {
+            res.status(400).send(`User has no change!`);
+        } else {
+            res.status(404).send(`User with id: ${id} don't exists!`);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(400).send(error);
+    }
+  });
+
 export default router
