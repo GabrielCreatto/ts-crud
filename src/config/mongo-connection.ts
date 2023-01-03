@@ -9,7 +9,6 @@ export async function connect_database() {
     await client.connect();
 
     const db: mongoDB.Db = client.db("test");
-
     const usersCollection: mongoDB.Collection = db.collection("users");
     
     await schema(db);

@@ -1,15 +1,15 @@
 import express, { Request, Response, Express } from "express";
 import { ObjectId } from "mongodb";
-import { collections } from "../models/mongo";
-import User from "../models/user";
+import User from "../models/user-model";
+import { UserCollection } from "../repositories/user-repository";
 
 const router = express.Router();
 
 router.post('/', async (req: Request, res: Response) => {
     try {
         const newUser = req.body as User;
-        const result = await collections.users?.insertOne(newUser)
-        console.log(result)
+        const result = await UserCollection.insertUser(newUser);
+        console.log(result);
 
         result
             ? res.status(201).send(`Successfully created a new user with id ${result.insertedId}`)
@@ -25,7 +25,7 @@ router.get('/:id', async (req: Request, res: Response) => {
         const id = req.params.id;
 
         const query = { _id: new ObjectId(id) };
-        const result = await collections.users?.findOne(query);
+        const result = await UserCollection.findOneUser(query);
 
         result
             ? res.status(201).send(result)
@@ -38,7 +38,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const result = await collections.users?.find().toArray();
+        const result = await UserCollection.findAllUsers();
 
         result
             ? res.status(201).send(result)
@@ -54,7 +54,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
         const id = req.params.id;
 
         const query = { _id: new ObjectId(id) };
-        const result = await collections.users?.deleteOne(query);
+        const result = await UserCollection.deleteOneUser(query);
 
         if (result && result.deletedCount) {
             res.status(202).send(`Successfully removed user with id ${id}`);
@@ -77,7 +77,7 @@ router.put("/:id", async (req: Request, res: Response) => {
         const updatedUser: User = req.body as User;
         const query = { _id: new ObjectId(id) };
       
-        const result = await collections.users?.updateOne(query, { $set: updatedUser})
+        const result = await UserCollection.updateOneUser(query, updatedUser);
   
         if (result && result.modifiedCount > 0) {
             res.status(200).send(`Successfully updated user with id ${id}!`);
